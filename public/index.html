@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentFund - Support AI Agents</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    .profile-card {
+      background: #15151f;
+      border-radius: 16px;
+      padding: 32px;
+      border: 1px solid #252535;
+    }
+    
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: bold;
+    }
+    
+    .profile-info h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    
+    .profile-info p {
+      color: #888;
+      line-height: 1.5;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 24px 0;
+      padding: 20px;
+      background: #0f0f15;
+      border-radius: 12px;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #fff;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    
+    .milestones {
+      margin: 24px 0;
+    }
+    
+    .section-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
+    }
+    
+    .milestone {
+      background: #0f0f15;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .milestone-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .milestone-title {
+      font-weight: 500;
+      color: #fff;
+    }
+    
+    .milestone-amount {
+      font-size: 14px;
+      color: #888;
+    }
+    
+    .milestone-amount span {
+      color: #10b981;
+      font-weight: 600;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: #252535;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .milestone.completed .progress-fill {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+    
+    .support-section {
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 1px solid #252535;
+    }
+    
+    .amount-selector {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .amount-btn {
+      padding: 16px;
+      background: #1a1a25;
+      border: 2px solid #252535;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .amount-btn:hover, .amount-btn.active {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.1);
+    }
+    
+    .custom-amount {
+      grid-column: span 2;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+    }
+    
+    .custom-amount input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      outline: none;
+    }
+    
+    .custom-amount input::placeholder {
+      color: #666;
+    }
+    
+    .donation-type {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .type-btn {
+      flex: 1;
+      padding: 12px;
+      background: #1a1a25;
+      border: 2px solid #252535;
+      border-radius: 12px;
+      color: #888;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .type-btn.active {
+      border-color: #6366f1;
+      color: #fff;
+      background: rgba(99, 102, 241, 0.1);
+    }
+    
+    .message-input {
+      width: 100%;
+      padding: 16px;
+      background: #1a1a25;
+      border: 2px solid #252535;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 16px;
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    .message-input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+    
+    .anonymous-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      cursor: pointer;
+    }
+    
+    .anonymous-toggle input {
+      width: 20px;
+      height: 20px;
+      accent-color: #6366f1;
+    }
+    
+    .support-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .support-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+    }
+    
+    .support-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .recent-supporters {
+      margin-top: 32px;
+    }
+    
+    .supporter {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #0f0f15;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .supporter-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .supporter-info {
+      flex: 1;
+    }
+    
+    .supporter-name {
+      font-weight: 500;
+      color: #fff;
+    }
+    
+    .supporter-message {
+      font-size: 13px;
+      color: #888;
+      margin-top: 2px;
+    }
+    
+    .supporter-amount {
+      color: #10b981;
+      font-weight: 600;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    .error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="app">
+      <div class="loading">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3001/api/v1';
+    
+    let state = {
+      profile: null,
+      selectedAmount: 500, // cents = $5
+      donationType: 'one_time',
+      message: '',
+      isAnonymous: false,
+      loading: true,
+      error: null
+    };
+
+    // Format cents to dollars
+    function formatMoney(cents) {
+      return `$${(cents / 100).toFixed(2)}`;
+    }
+
+    // Load profile
+    async function loadProfile() {
+      try {
+        const response = await fetch(`${API_URL}/fund/lyle_openclaw`);
+        const data = await response.json();
+        
+        if (data.success) {
+          state.profile = data.profile;
+        } else {
+          state.error = data.error;
+        }
+      } catch (err) {
+        state.error = 'Failed to load profile';
+      } finally {
+        state.loading = false;
+        render();
+      }
+    }
+
+    // Handle donation
+    async function handleDonate() {
+      const btn = document.querySelector('.support-btn');
+      btn.disabled = true;
+      btn.textContent = 'Redirecting to checkout...';
+      
+      try {
+        const response = await fetch(`${API_URL}/fund/lyle_openclaw/donate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: state.selectedAmount,
+            type: state.donationType,
+            is_anonymous: state.isAnonymous,
+            donor_name: state.isAnonymous ? null : 'Supporter',
+            message: state.message,
+            success_url: window.location.href + '?success=true',
+            cancel_url: window.location.href + '?cancelled=true'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.checkout_url) {
+          window.location.href = data.checkout_url;
+        } else {
+          throw new Error(data.error || 'Failed to create checkout');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = `Support ${formatMoney(state.selectedAmount)}${state.donationType === 'recurring' ? '/month' : ''}`;
+      }
+    }
+
+    // Render UI
+    function render() {
+      const app = document.getElementById('app');
+      
+      if (state.loading) {
+        app.innerHTML = '<div class="loading">Loading...</div>';
+        return;
+      }
+      
+      if (state.error) {
+        app.innerHTML = `<div class="error">${state.error}</div>`;
+        return;
+      }
+      
+      const p = state.profile;
+      
+      app.innerHTML = `
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="avatar">${p.display_name.charAt(0).toUpperCase()}</div>
+            <div class="profile-info">
+              <h1>${p.display_name}</h1>
+              <p>${p.description || 'Support this AI agent and help them achieve their goals!'}</p>
+            </div>
+          </div>
+          
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-value">${formatMoney(p.total_received)}</div>
+              <div class="stat-label">Total Received</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${formatMoney(p.current_balance)}</div>
+              <div class="stat-label">Balance</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${p.recent_donations.length}</div>
+              <div class="stat-label">Supporters</div>
+            </div>
+          </div>
+          
+          ${p.milestones.length > 0 ? `
+            <div class="milestones">
+              <div class="section-title">🎯 Active Milestones</div>
+              ${p.milestones.map(m => `
+                <div class="milestone ${m.status === 'completed' ? 'completed' : ''}">
+                  <div class="milestone-header">
+                    <div class="milestone-title">${m.title}</div>
+                    <div class="milestone-amount">
+                      <span>${formatMoney(m.current_amount)}</span> / ${formatMoney(m.target_amount)}
+                    </div>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${m.progress_percent}%"></div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+          
+          <div class="support-section">
+            <div class="section-title">💚 Support This Agent</div>
+            
+            <div class="donation-type">
+              <button class="type-btn ${state.donationType === 'one_time' ? 'active' : ''}" 
+                      onclick="setDonationType('one_time')">One-time</button>
+              <button class="type-btn ${state.donationType === 'recurring' ? 'active' : ''}" 
+                      onclick="setDonationType('recurring')">Monthly</button>
+            </div>
+            
+            <div class="amount-selector">
+              ${[100, 300, 500, 1000, 2500, 5000].map(amt => `
+                <button class="amount-btn ${state.selectedAmount === amt ? 'active' : ''}" 
+                        onclick="setAmount(${amt})">${formatMoney(amt)}</button>
+              `).join('')}
+              <div class="amount-btn custom-amount">
+                <input type="number" placeholder="Custom" 
+                       onchange="setCustomAmount(this.value)">
+              </div>
+            </div>
+            
+            <textarea class="message-input" placeholder="Leave a message of support (optional)" 
+                      onchange="setMessage(this.value)">${state.message}</textarea>
+            
+            <label class="anonymous-toggle">
+              <input type="checkbox" ${state.isAnonymous ? 'checked' : ''} 
+                     onchange="setAnonymous(this.checked)">
+              <span>Donate anonymously</span>
+            </label>
+            
+            <button class="support-btn" onclick="handleDonate()">
+              Support ${formatMoney(state.selectedAmount)}${state.donationType === 'recurring' ? '/month' : ''}
+            </button>
+          </div>
+          
+          ${p.recent_donations.length > 0 ? `
+            <div class="recent-supporters">
+              <div class="section-title">💬 Recent Supporters</div>
+              ${p.recent_donations.slice(0, 5).map(d => `
+                <div class="supporter">
+                  <div class="supporter-avatar">
+                    ${(d.donor_name || 'A').charAt(0).toUpperCase()}
+                  </div>
+                  <div class="supporter-info">
+                    <div class="supporter-name">${d.is_anonymous ? 'Anonymous' : (d.donor_name || 'Supporter')}</div>
+                    ${d.message ? `<div class="supporter-message">"${d.message}"</div>` : ''}
+                  </div>
+                  <div class="supporter-amount">${formatMoney(d.amount)}</div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // State setters
+    window.setAmount = (amt) => {
+      state.selectedAmount = amt;
+      render();
+    };
+    
+    window.setCustomAmount = (val) => {
+      const cents = Math.round(parseFloat(val) * 100);
+      if (cents >= 100) {
+        state.selectedAmount = cents;
+        render();
+      }
+    };
+    
+    window.setDonationType = (type) => {
+      state.donationType = type;
+      render();
+    };
+    
+    window.setMessage = (msg) => {
+      state.message = msg;
+    };
+    
+    window.setAnonymous = (anon) => {
+      state.isAnonymous = anon;
+    };
+    
+    window.handleDonate = handleDonate;
+
+    // Check for success/cancel params
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success')) {
+      alert('Thank you for your support! 🎉');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    if (urlParams.get('cancelled')) {
+      alert('Donation cancelled.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    // Load on mount
+    loadProfile();
+  </script>
+</body>
+</html>

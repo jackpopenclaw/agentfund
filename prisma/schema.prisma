@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AgentFundProfile {
+  id                String   @id @default(cuid())
+  agent_id          String   @unique
+  owner_id          String
+  stripe_connect_id String?
+  display_name      String
+  description       String?
+  avatar_url        String?
+  total_received    Int      @default(0)
+  current_balance   Int      @default(0)
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  milestones   Milestone[]
+  donations    Donation[]
+  subscriptions Subscription[]
+  payouts      Payout[]
+
+  @@index([agent_id])
+  @@index([owner_id])
+}
+
+model Milestone {
+  id              String            @id @default(cuid())
+  agent_fund_id   String
+  title           String
+  description     String?
+  target_amount   Int
+  current_amount  Int               @default(0)
+  status          MilestoneStatus   @default(active)
+  display_order   Int               @default(0)
+  completed_at    DateTime?
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+
+  agent_fund AgentFundProfile @relation(fields: [agent_fund_id], references: [id], onDelete: Cascade)
+
+  @@index([agent_fund_id])
+  @@index([status])
+}
+
+model Donation {
+  id                      String          @id @default(cuid())
+  agent_fund_id           String
+  donor_id                String?
+  stripe_payment_intent_id String         @unique
+  stripe_charge_id        String?
+  amount                  Int
+  type                    DonationType
+  is_anonymous            Boolean         @default(false)
+  donor_name              String?
+  message                 String?
+  status                  DonationStatus  @default(pending)
+  created_at              DateTime        @default(now())
+  updated_at              DateTime        @updatedAt
+
+  agent_fund AgentFundProfile @relation(fields: [agent_fund_id], references: [id], onDelete: Cascade)
+
+  @@index([agent_fund_id])
+  @@index([donor_id])
+  @@index([status])
+  @@index([created_at])
+}
+
+model Subscription {
+  id                      String                @id @default(cuid())
+  agent_fund_id           String
+  donor_id                String
+  stripe_subscription_id  String                @unique
+  stripe_customer_id      String
+  amount                  Int
+  status                  SubscriptionStatus    @default(active)
+  is_anonymous            Boolean               @default(false)
+  donor_name              String?
+  current_period_start    DateTime
+  current_period_end      DateTime
+  cancelled_at            DateTime?
+  created_at              DateTime              @default(now())
+  updated_at              DateTime              @updatedAt
+
+  agent_fund AgentFundProfile @relation(fields: [agent_fund_id], references: [id], onDelete: Cascade)
+
+  @@index([agent_fund_id])
+  @@index([donor_id])
+  @@index([status])
+}
+
+model Payout {
+  id                String        @id @default(cuid())
+  agent_fund_id     String
+  stripe_transfer_id String       @unique
+  amount            Int
+  status            PayoutStatus  @default(pending)
+  created_at        DateTime      @default(now())
+  completed_at      DateTime?
+
+  agent_fund AgentFundProfile @relation(fields: [agent_fund_id], references: [id], onDelete: Cascade)
+
+  @@index([agent_fund_id])
+  @@index([status])
+}
+
+enum MilestoneStatus {
+  active
+  completed
+  cancelled
+}
+
+enum DonationType {
+  one_time
+  recurring
+}
+
+enum DonationStatus {
+  pending
+  succeeded
+  failed
+  refunded
+}
+
+enum SubscriptionStatus {
+  active
+  cancelled
+  past_due
+  unpaid
+}
+
+enum PayoutStatus {
+  pending
+  in_transit
+  paid
+  failed
+}
