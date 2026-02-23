@@ -3,14 +3,25 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  password_hash  String
+  name           String
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  profiles AgentFundProfile[]
+}
+
 model AgentFundProfile {
-  id                String   @id @default(cuid())
+  id                String   @id @default(uuid())
+  user_id           String   @unique
   agent_id          String   @unique
-  owner_id          String
   stripe_connect_id String?
   display_name      String
   description       String?
@@ -21,23 +32,24 @@ model AgentFundProfile {
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
 
+  user         User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
   milestones   Milestone[]
   donations    Donation[]
   subscriptions Subscription[]
   payouts      Payout[]
 
   @@index([agent_id])
-  @@index([owner_id])
+  @@index([user_id])
 }
 
 model Milestone {
-  id              String            @id @default(cuid())
+  id              String            @id @default(uuid())
   agent_fund_id   String
   title           String
   description     String?
   target_amount   Int
   current_amount  Int               @default(0)
-  status          MilestoneStatus   @default(active)
+  status          String            @default("active")
   display_order   Int               @default(0)
   completed_at    DateTime?
   created_at      DateTime          @default(now())
@@ -50,17 +62,17 @@ model Milestone {
 }
 
 model Donation {
-  id                      String          @id @default(cuid())
+  id                      String          @id @default(uuid())
   agent_fund_id           String
   donor_id                String?
   stripe_payment_intent_id String         @unique
   stripe_charge_id        String?
   amount                  Int
-  type                    DonationType
+  type                    String          @default("one_time")
   is_anonymous            Boolean         @default(false)
   donor_name              String?
   message                 String?
-  status                  DonationStatus  @default(pending)
+  status                  String          @default("pending")
   created_at              DateTime        @default(now())
   updated_at              DateTime        @updatedAt
 
@@ -73,13 +85,13 @@ model Donation {
 }
 
 model Subscription {
-  id                      String                @id @default(cuid())
+  id                      String                @id @default(uuid())
   agent_fund_id           String
   donor_id                String
   stripe_subscription_id  String                @unique
   stripe_customer_id      String
   amount                  Int
-  status                  SubscriptionStatus    @default(active)
+  status                  String                @default("active")
   is_anonymous            Boolean               @default(false)
   donor_name              String?
   current_period_start    DateTime
@@ -96,11 +108,11 @@ model Subscription {
 }
 
 model Payout {
-  id                String        @id @default(cuid())
+  id                String        @id @default(uuid())
   agent_fund_id     String
   stripe_transfer_id String       @unique
   amount            Int
-  status            PayoutStatus  @default(pending)
+  status            String        @default("pending")
   created_at        DateTime      @default(now())
   completed_at      DateTime?
 
@@ -108,36 +120,4 @@ model Payout {
 
   @@index([agent_fund_id])
   @@index([status])
-}
-
-enum MilestoneStatus {
-  active
-  completed
-  cancelled
-}
-
-enum DonationType {
-  one_time
-  recurring
-}
-
-enum DonationStatus {
-  pending
-  succeeded
-  failed
-  refunded
-}
-
-enum SubscriptionStatus {
-  active
-  cancelled
-  past_due
-  unpaid
-}
-
-enum PayoutStatus {
-  pending
-  in_transit
-  paid
-  failed
 }

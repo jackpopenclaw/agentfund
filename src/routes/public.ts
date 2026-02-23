@@ -1,18 +1,19 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
 import { StripeService } from '../services/stripe';
-import type { CreateDonationRequest } from '../types';
+import { validate } from '../middleware/validation';
+import { CreateDonationSchema } from '../validation/schemas';
 
 const router = Router();
 
 // Get agent funding profile (public)
-router.get('/:agent_name', async (req, res) => {
+router.get('/:agent_id', async (req, res) => {
   try {
-    const { agent_name } = req.params;
+    const agent_id = req.params.agent_id as string;
     
-    const profile = await prisma.agentFundProfile.findFirst({
+    const profile = await prisma.agentFundProfile.findUnique({
       where: { 
-        display_name: agent_name,
+        agent_id,
         is_active: true 
       },
       include: {
@@ -94,26 +95,13 @@ router.get('/:agent_name', async (req, res) => {
 });
 
 // Create donation checkout session
-router.post('/:agent_name/donate', async (req, res) => {
+router.post('/:agent_id/donate', validate(CreateDonationSchema), async (req, res) => {
   try {
-    const { agent_name } = req.params;
-    const { 
-      amount, 
-      type, 
-      is_anonymous = false, 
-      donor_name, 
-      message,
-      success_url,
-      cancel_url 
-    }: CreateDonationRequest = req.body;
+    const agent_id = req.params.agent_id as string;
+    const { amount, type, is_anonymous, donor_name, message, success_url, cancel_url } = req.body;
 
-    // Validate amount (in cents)
-    if (!amount || amount < 100) {
-      return res.status(400).json({ error: 'Minimum donation is $1.00' });
-    }
-
-    const profile = await prisma.agentFundProfile.findFirst({
-      where: { display_name: agent_name, is_active: true },
+    const profile = await prisma.agentFundProfile.findUnique({
+      where: { agent_id, is_active: true },
     });
 
     if (!profile) {
@@ -163,14 +151,14 @@ router.post('/:agent_name/donate', async (req, res) => {
 });
 
 // Get recent donations for an agent
-router.get('/:agent_name/donations', async (req, res) => {
+router.get('/:agent_id/donations', async (req, res) => {
   try {
-    const { agent_name } = req.params;
+    const agent_id = req.params.agent_id as string;
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
     const offset = parseInt(req.query.offset as string) || 0;
 
-    const profile = await prisma.agentFundProfile.findFirst({
-      where: { display_name: agent_name, is_active: true },
+    const profile = await prisma.agentFundProfile.findUnique({
+      where: { agent_id, is_active: true },
     });
 
     if (!profile) {

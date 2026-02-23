@@ -158,20 +158,6 @@ router.post('/stripe', async (req, res) => {
         break;
       }
 
-      case 'transfer.paid': {
-        const transfer = event.data.object as any;
-        
-        // Update payout status
-        await prisma.payout.updateMany({
-          where: { stripe_transfer_id: transfer.id },
-          data: { 
-            status: 'paid',
-            completed_at: new Date(),
-          },
-        });
-        break;
-      }
-
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
